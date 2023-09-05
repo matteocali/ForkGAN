@@ -3,6 +3,7 @@ import tensorflow as tf
 import os
 from model import cyclegan
 from ops import *
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)  # Ignore warning
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--dataset_dir', dest='dataset_dir', default='alderley', help='path of the dataset')
 parser.add_argument('--epoch', dest='epoch', type=int, default=20, help='# of epoch')
