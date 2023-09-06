@@ -489,4 +489,7 @@ class cyclegan(object):
             image_path = os.path.join(args.test_dir,'{0}_{1}'.format(args.which_direction, os.path.basename(sample_file)))
             fake_img,refine_fake,rec_img,cycle_img = self.sess.run([out_var,refine_var,rec_var,cycle_var], feed_dict={in_var: sample_image})
             merge=np.concatenate([sample_image,fake_img,refine_fake,rec_img,cycle_img],axis=2)
-            save_images(merge, [1, 1], image_path)
+            if args.single_img:
+                imsave(refine_fake, [1, 1], image_path)
+            else:
+                save_images(merge, [1, 1], image_path)

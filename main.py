@@ -4,6 +4,8 @@ import os
 from model import cyclegan
 from ops import *
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)  # Ignore warning
+
+
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--dataset_dir', dest='dataset_dir', default='alderley', help='path of the dataset')
 parser.add_argument('--epoch', dest='epoch', type=int, default=20, help='# of epoch')
@@ -32,9 +34,12 @@ parser.add_argument('--test_dir', dest='test_dir', default='./check/alderley/tes
 parser.add_argument('--L1_lambda', dest='L1_lambda', type=float, default=10.0, help='weight on L1 term in objective')
 parser.add_argument('--use_resnet', dest='use_resnet', type=bool, default=True,help='generation network using reidule block')
 parser.add_argument('--use_lsgan', dest='use_lsgan', type=bool, default=True, help='gan loss defined in lsgan')
-parser.add_argument('--max_size', dest='max_size', type=int, default=50,help='max size of image pool, 0 means do not use image pool')
+parser.add_argument('--max_size', dest='max_size', type=int, default=50, help='max size of image pool, 0 means do not use image pool')
+parser.add_argument('--single_img', dest='single_img', type=bool, default=False, help='save only the converted image')
 args = parser.parse_args()
+
 os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
+
 def main(_):
     if not os.path.exists(args.checkpoint_dir):
         os.makedirs(args.checkpoint_dir)
