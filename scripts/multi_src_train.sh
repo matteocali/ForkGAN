@@ -7,6 +7,7 @@ python main.py \
     --n_d 2 \
     --n_scale 2 \
     --L1_lambda 10 \
+    --batch_size 1 \
     --which_direction BtoA \
     --checkpoint_dir ./check/multi_src \
     --sample_dir ./check/multi_src/sample \
