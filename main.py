@@ -10,15 +10,24 @@ tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)  # Ignore warning
 def str2bool(v):
     return v.lower() in ('true')
 
+# Defien the parser for single image
+SINGLE_IMG = ['none', 'std', 'refine']
+def single_img_parser(v):
+    if v not in SINGLE_IMG:
+        raise argparse.ArgumentTypeError('Not a valid single image type, please choose from None, std, refine')
+    return v
+
 
 parser = argparse.ArgumentParser(description='')
-parser.add_argument('--dataset_dir', dest='dataset_dir', default='alderley', help='path of the dataset')
+parser.add_argument('--dataset_dir', dest='dataset_dir', default='alderley', help='path of the dataset used for training')
+parser.add_argument('--test_dataset_dir', dest='test_dataset_dir', default='alderley', help='path of the dataset used for testing')
 parser.add_argument('--epoch', dest='epoch', type=int, default=20, help='# of epoch')
 parser.add_argument('--epoch_step', dest='epoch_step', type=int, default=10, help='# of epoch to decay lr')
 parser.add_argument('--batch_size', dest='batch_size', type=int, default=1, help='# images in batch')
 parser.add_argument('--train_size', dest='train_size', type=int, default=1e8, help='# images used to train')
 parser.add_argument('--load_size', dest='load_size', type=int, default=286, help='scale images to this size')
 parser.add_argument('--fine_size', dest='fine_size', type=int, default=256, help='then crop to this size')
+parser.add_argument('--train_fine_size', dest='train_fine_size', type=int, default=256, help='load the correct fine size used for training')
 parser.add_argument('--ngf', dest='ngf', type=int, default=64, help='# of gen filters in first conv layer')
 parser.add_argument('--ndf', dest='ndf', type=int, default=64, help='# of discri filters in first conv layer')
 parser.add_argument('--n_d', dest='n_d', type=int, default=2, help='# of discriminators')
@@ -40,7 +49,7 @@ parser.add_argument('--L1_lambda', dest='L1_lambda', type=float, default=10.0, h
 parser.add_argument('--use_resnet', dest='use_resnet', type=str2bool, default=True,help='generation network using reidule block')
 parser.add_argument('--use_lsgan', dest='use_lsgan', type=str2bool, default=True, help='gan loss defined in lsgan')
 parser.add_argument('--max_size', dest='max_size', type=int, default=50, help='max size of image pool, 0 means do not use image pool')
-parser.add_argument('--single_img', dest='single_img', type=str2bool, default=False, help='save only the converted image')
+parser.add_argument('--single_img', dest='single_img', type=single_img_parser, default='none', help='save only the converted image')
 args = parser.parse_args()
 
 os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)

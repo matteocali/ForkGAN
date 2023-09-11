@@ -103,15 +103,18 @@ class cyclegan(object):
         self.sess = sess
         self.batch_size = args.batch_size
         self.image_size = args.fine_size
+        self.train_image_size = args.train_fine_size
         self.input_c_dim = args.input_nc
         self.output_c_dim = args.output_nc
         self.L1_lambda = args.L1_lambda
         self.dataset_dir = args.dataset_dir
+        self.test_dataset_dir = args.test_dataset_dir
         self.n_d = args.n_d
         self.n_scale = args.n_scale
         self.ndf= args.ndf
-        self.load_size =args.load_size
-        self.fine_size =args.fine_size
+        self.load_size = args.load_size
+        self.fine_size = args.fine_size
+        self.train_size = args.train_size
         self.generator = generator_resnet
         self.domain_agnostic_classifier=domain_agnostic_classifier
         if args.use_lsgan:
@@ -430,7 +433,7 @@ class cyclegan(object):
     def load(self, checkpoint_dir):
         print(" [*] Reading checkpoint...")
 
-        model_dir = "%s_%s" % (self.dataset_dir, self.image_size)
+        model_dir = "%s_%s" % (self.dataset_dir, self.train_image_size)
         checkpoint_dir = os.path.join(checkpoint_dir, model_dir)
 
         ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
@@ -470,9 +473,9 @@ class cyclegan(object):
         init_op = tf.global_variables_initializer()
         self.sess.run(init_op)
         if args.which_direction == 'AtoB':
-            sample_files = glob('./datasets/{}/*.*'.format(self.dataset_dir + '/testA'))
+            sample_files = glob('./datasets/{}/*.*'.format(self.test_dataset_dir + '/testA'))
         elif args.which_direction == 'BtoA':
-            sample_files = glob('./datasets/{}/*.*'.format(self.dataset_dir + '/testB'))
+            sample_files = glob('./datasets/{}/*.*'.format(self.test_dataset_dir + '/testB'))
         else:
             raise Exception('--which_direction must be AtoB or BtoA')
 
@@ -489,7 +492,9 @@ class cyclegan(object):
             image_path = os.path.join(args.test_dir,'{0}_{1}'.format(args.which_direction, os.path.basename(sample_file)))
             fake_img,refine_fake,rec_img,cycle_img = self.sess.run([out_var,refine_var,rec_var,cycle_var], feed_dict={in_var: sample_image})
             merge=np.concatenate([sample_image,fake_img,refine_fake,rec_img,cycle_img],axis=2)
-            if args.single_img:
+            if args.single_img == 'std':
+                imsave(fake_img, [1, 1], image_path)
+            elif args.single_img == 'refine':
                 imsave(refine_fake, [1, 1], image_path)
             else:
                 save_images(merge, [1, 1], image_path)
