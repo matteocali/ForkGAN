@@ -3,6 +3,8 @@ from utils import *
 from ops import *
 import time
 from glob import glob
+
+
 def gaussian_noise_layer(input_layer, std):
     noise = tf.random_normal(shape=tf.shape(input_layer), mean=0.0, stddev=std, dtype=tf.float32)
     return input_layer+noise
@@ -496,5 +498,7 @@ class cyclegan(object):
                 imsave(fake_img, [1, 1], image_path)
             elif args.single_img == 'refine':
                 imsave(refine_fake, [1, 1], image_path)
+            elif args.single_img == 'hist_spec':
+                imsave(hist_spcification(fake_img), [1, 1], image_path)
             else:
                 save_images(merge, [1, 1], image_path)

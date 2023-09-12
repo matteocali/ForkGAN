@@ -11,10 +11,10 @@ def str2bool(v):
     return v.lower() in ('true')
 
 # Defien the parser for single image
-SINGLE_IMG = ['none', 'std', 'refine']
+SINGLE_IMG = ['none', 'std', 'refine', 'hist_spec']
 def single_img_parser(v):
     if v not in SINGLE_IMG:
-        raise argparse.ArgumentTypeError('Not a valid single image type, please choose from None, std, refine')
+        raise argparse.ArgumentTypeError('Not a valid single image type, please choose from None, std, refine, hist_spec')
     return v
 
 

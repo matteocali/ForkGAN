@@ -2,6 +2,9 @@ import scipy.misc
 import numpy as np
 import copy
 import os
+import cv2
+from skimage.exposure import match_histograms
+
 class ImagePool(object):
     def __init__(self, maxsize=50):
         self.maxsize = maxsize
@@ -64,7 +67,7 @@ def load_train_data(image_path, load_size=286, fine_size=256, is_testing=False):
 def get_image(image_path, image_size, is_crop=True, resize_w=64, is_grayscale = False):
     return transform(imread(image_path, is_grayscale), image_size, is_crop, resize_w)
 
-def save_images(images, size, image_path):
+def save_images(images, size, image_path,):
     return imsave(inverse_transform(images), size, image_path)
 
 def imread(path, is_grayscale = False):
@@ -109,3 +112,22 @@ def transform(image, npx=64, is_crop=True, resize_w=64):
 
 def inverse_transform(images):
     return (images+1.)/2.
+
+def hist_spcification(img):
+    """
+    Given the image in input it changes the Y histogram with the one obtained by real night images
+    :param img: image in input
+    """ 
+
+    # Load the night images Y histograms
+    night_y_hist = np.load('night_y_hist.npy')
+    # Normalize the image
+    img = cv2.normalize(img[0, ...], None, alpha = 0, beta = 255, norm_type = cv2.NORM_MINMAX, dtype = cv2.CV_32F).astype(np.uint8)
+    # Convert to YCrCb color space
+    ycrcb_img = cv2.cvtColor(img, cv2.COLOR_RGB2YCrCb)
+    # Specialize the histogram of the Y channel
+    ycrcb_img[..., 0] = match_histograms(ycrcb_img[..., 0], night_y_hist)
+    # Convert back to RGB color space
+    img = cv2.cvtColor(ycrcb_img, cv2.COLOR_YCrCb2RGB)
+
+    return img[None, ...]
