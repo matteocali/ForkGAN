@@ -3,7 +3,7 @@ python main.py \
     --phase test \
     --dataset_dir multi_src \
     --test_dataset_dir multi_src \
-    --train_train_fine_sizesize 256 \
+    --train_fine_size 256 \
     --fine_size 256 \
     --single_img 'none' \
     --which_direction BtoA \
