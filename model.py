@@ -500,7 +500,8 @@ class cyclegan(object):
             else:
                 sample_image = [load_test_data(sample_file, self.image_size)]
             sample_image = np.array(sample_image).astype(np.float32)
-            image_path = os.path.join(args.test_dir,'{0}_{1}'.format(args.which_direction, os.path.basename(sample_file)))
+            # image_path = os.path.join(args.test_dir,'{0}_{1}'.format(args.which_direction, os.path.basename(sample_file)))
+            image_path = os.path.join(args.test_dir,'{0}'.format(sample_file.split('/')[-1]))
             fake_img,refine_fake,rec_img,cycle_img = self.sess.run([out_var,refine_var,rec_var,cycle_var], feed_dict={in_var: sample_image})
             merge=np.concatenate([sample_image,fake_img,refine_fake,rec_img,cycle_img],axis=2)
             if args.single_img == 'std':
