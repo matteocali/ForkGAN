@@ -7,8 +7,20 @@ tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)  # Ignore warning
 
 
 # Define the bool parser for argparse
-def str2bool(v):
+def str2bool(v: str) -> bool:
     return v.lower() in ('true')
+
+# Define the parser for img shape
+def str2shape(s: str) -> tuple:
+    try:
+        # Split the input string by comma
+        s = s.strip().split(',')
+        # Check that thi input has only two values
+        if len(s) != 2:
+            raise argparse.ArgumentTypeError('Image shape must be a tuple of integers')
+        return tuple(map(int, s))
+    except:
+        raise argparse.ArgumentTypeError('Image shape must be a tuple of integers')
 
 # Defien the parser for single image
 SINGLE_IMG = ['none', 'std', 'refine', 'hist_spec']
@@ -26,8 +38,8 @@ parser.add_argument('--epoch_step', dest='epoch_step', type=int, default=10, hel
 parser.add_argument('--batch_size', dest='batch_size', type=int, default=1, help='# images in batch')
 parser.add_argument('--train_size', dest='train_size', type=int, default=1e8, help='# images used to train')
 parser.add_argument('--load_size', dest='load_size', type=int, default=286, help='scale images to this size')
+parser.add_argument('--img_out_shape', dest='img_out_shape', type=str2shape, default=[256, 1024], help='size of the final output image: height, width')
 parser.add_argument('--fine_size', dest='fine_size', type=int, default=256, help='then crop to this size')
-parser.add_argument('--train_fine_size', dest='train_fine_size', type=int, default=256, help='load the correct fine size used for training')
 parser.add_argument('--ngf', dest='ngf', type=int, default=64, help='# of gen filters in first conv layer')
 parser.add_argument('--ndf', dest='ndf', type=int, default=64, help='# of discri filters in first conv layer')
 parser.add_argument('--n_d', dest='n_d', type=int, default=2, help='# of discriminators')

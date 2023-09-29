@@ -31,7 +31,10 @@ class ImagePool(object):
 
 def load_test_data(image_path, fine_size=256):
     img = imread(image_path)
-    img = scipy.misc.imresize(img, [fine_size, fine_size*2])
+    if isinstance(fine_size, int):
+        img = scipy.misc.imresize(img, [fine_size, fine_size*2])
+    else:
+        img = scipy.misc.imresize(img, [fine_size[0], fine_size[1]])
     img = img/127.5 - 1
     return img
 
@@ -89,7 +92,10 @@ def merge(images, size):
 
     return img
 
-def imsave(images, size, path):
+def imsave(images, size, path, shape=None):
+    # Resize the image to the given shape
+    if shape is not None:
+        images = cv2.resize(images[0, ...], shape[::-1], interpolation = cv2.INTER_AREA)[None, ...]
     return scipy.misc.imsave(path, merge(images, size))
 
 def center_crop(x, crop_h, crop_w,

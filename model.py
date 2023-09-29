@@ -84,7 +84,6 @@ def sce_criterion(logits, labels):
     return tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=labels))
 
 
-
 def mae_criterion_list(in_, target):
     loss = 0.0
     for i in range(len(target)):
@@ -104,8 +103,15 @@ class cyclegan(object):
     def __init__(self, sess, args):
         self.sess = sess
         self.batch_size = args.batch_size
-        self.image_size = args.fine_size
-        self.train_image_size = args.train_fine_size
+
+        # Defien the final output shape
+        if args.img_out_shape[0] > 1296 or args.img_out_shape[1] > 2304:
+            self.image_size = [round(args.img_out_shape[0] * 0.6), round(args.img_out_shape[1] * 0.6)]
+            self.final_resize = args.img_out_shape
+        else:
+            self.image_size = args.img_out_shape
+            self.final_resize = None
+
         self.input_c_dim = args.input_nc
         self.output_c_dim = args.output_nc
         self.L1_lambda = args.L1_lambda
@@ -153,7 +159,7 @@ class cyclegan(object):
             return images
 
     def _build_model(self):
-        self.real_data = tf.placeholder(tf.float32,[self.batch_size, self.image_size, self.image_size*2,self.input_c_dim + self.output_c_dim],name='real_A_and_B_images')
+        self.real_data = tf.placeholder(tf.float32,[self.batch_size, self.image_size[0], self.image_size[1],self.input_c_dim + self.output_c_dim],name='real_A_and_B_images')
 
         self.real_A = self.real_data[:, :, :, :self.input_c_dim]
         self.real_B = self.real_data[:, :, :, self.input_c_dim:self.input_c_dim + self.output_c_dim]
@@ -218,12 +224,12 @@ class cyclegan(object):
         self.g_rec_real = abs_criterion(self.rec_realA, self.real_A) + abs_criterion(self.rec_realB, self.real_B)
         self.g_rec_cycle = abs_criterion(self.real_A, self.fake_A_) + abs_criterion(self.real_B, self.fake_B_)
 
-        self.fake_A_sample = tf.placeholder(tf.float32,[self.batch_size, self.image_size, self.image_size*2,  self.output_c_dim], name='fake_A_sample')
-        self.fake_B_sample = tf.placeholder(tf.float32,[self.batch_size, self.image_size, self.image_size*2,  self.output_c_dim], name='fake_B_sample')
-        self.rec_A_sample = tf.placeholder(tf.float32,[self.batch_size, self.image_size, self.image_size * 2, self.output_c_dim],name='rec_A_sample')
-        self.rec_B_sample = tf.placeholder(tf.float32,[self.batch_size, self.image_size, self.image_size * 2, self.output_c_dim],name='rec_B_sample')
-        self.rec_fakeA_sample = tf.placeholder(tf.float32, [self.batch_size, self.image_size, self.image_size * 2,self.output_c_dim], name='rec_fakeA_sample')
-        self.rec_fakeB_sample = tf.placeholder(tf.float32, [self.batch_size, self.image_size, self.image_size * 2,self.output_c_dim], name='rec_fakeB_sample')
+        self.fake_A_sample = tf.placeholder(tf.float32,[self.batch_size, self.image_size[0], self.image_size[1],  self.output_c_dim], name='fake_A_sample')
+        self.fake_B_sample = tf.placeholder(tf.float32,[self.batch_size, self.image_size[0], self.image_size[1],  self.output_c_dim], name='fake_B_sample')
+        self.rec_A_sample = tf.placeholder(tf.float32,[self.batch_size, self.image_size[0], self.image_size[1], self.output_c_dim],name='rec_A_sample')
+        self.rec_B_sample = tf.placeholder(tf.float32,[self.batch_size, self.image_size[0], self.image_size[1], self.output_c_dim],name='rec_B_sample')
+        self.rec_fakeA_sample = tf.placeholder(tf.float32, [self.batch_size, self.image_size[0], self.image_size[1], self.output_c_dim], name='rec_fakeA_sample')
+        self.rec_fakeB_sample = tf.placeholder(tf.float32, [self.batch_size, self.image_size[0], self.image_size[1], self.output_c_dim], name='rec_fakeB_sample')
 
         self.d_loss_item=[]
         self.d_loss_item_rec = []
@@ -287,8 +293,8 @@ class cyclegan(object):
              self.d_loss_sum]
         )
 
-        self.test_A = tf.placeholder(tf.float32,[self.batch_size, self.image_size, self.image_size*2,self.input_c_dim], name='test_A')
-        self.test_B = tf.placeholder(tf.float32,[self.batch_size, self.image_size, self.image_size*2,self.output_c_dim], name='test_B')
+        self.test_A = tf.placeholder(tf.float32,[self.batch_size, self.image_size[0], self.image_size[1],self.input_c_dim], name='test_A')
+        self.test_B = tf.placeholder(tf.float32,[self.batch_size, self.image_size[0], self.image_size[1],self.output_c_dim], name='test_B')
 
         self.testB,self.rec_testA,_ = self.generator(self.test_A, self.options, True, name="generatorA2B")
         self.rec_cycle_A,self.refine_testB,_ =self.generator(self.testB, self.options, True, name="generatorB2A")
@@ -378,7 +384,7 @@ class cyclegan(object):
                 # Update G network and record fake outputs
                 fake_A,fake_B,rec_A,rec_B,rec_fake_A,rec_fake_B,_,_,g_loss,gan_loss,g_rec_cycle,g_rec_real,percep,g_adv,g_adv_rec,g_adv_recfake,cls_loss,g_cls_loss,summary_str = self.sess.run(
                     [self.fake_A, self.fake_B,self.rec_realA,self.rec_realB,self.rec_fakeA,self.rec_fakeB, self.g_optim,self.p_optim,self.g_loss,self.g_adv_total,self.g_rec_cycle,self.g_rec_real,self.percep_loss,self.g_adv,self.g_adv_rec,self.g_adv_recfake,self.cls_loss,self.g_cls_loss,self.g_sum],
-                    feed_dict={self.real_data: batch_images, self.lr: lr})
+                     feed_dict={self.real_data: batch_images, self.lr: lr})
                 self.writer.add_summary(summary_str, counter)
                 [fake_A, fake_B] = self.pool([fake_A, fake_B])
                 [rec_A, rec_B] = self.pool([rec_A, rec_B])
@@ -422,7 +428,7 @@ class cyclegan(object):
 
     def save(self, checkpoint_dir, step):
         model_name = "cyclegan.model"
-        model_dir = "%s_%s" % (self.dataset_dir, self.image_size)
+        model_dir = "%s_%s" % (self.dataset_dir, self.fine_size)
         checkpoint_dir = os.path.join(checkpoint_dir, model_dir)
 
         if not os.path.exists(checkpoint_dir):
@@ -435,7 +441,7 @@ class cyclegan(object):
     def load(self, checkpoint_dir):
         print(" [*] Reading checkpoint...")
 
-        model_dir = "%s_%s" % (self.dataset_dir, self.train_image_size)
+        model_dir = "%s_%s" % (self.dataset_dir, self.fine_size)
         checkpoint_dir = os.path.join(checkpoint_dir, model_dir)
 
         ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
@@ -489,16 +495,19 @@ class cyclegan(object):
             self.testA,self.refine_testA, self.test_B,self.rec_testB,self.rec_cycle_B)
         for sample_file in sample_files:
             print('Processing image: ' + sample_file)
-            sample_image = [load_test_data(sample_file, args.fine_size)]
+            if args.phase == 'train':
+                sample_image = [load_test_data(sample_file, args.fine_size)]
+            else:
+                sample_image = [load_test_data(sample_file, self.image_size)]
             sample_image = np.array(sample_image).astype(np.float32)
             image_path = os.path.join(args.test_dir,'{0}_{1}'.format(args.which_direction, os.path.basename(sample_file)))
             fake_img,refine_fake,rec_img,cycle_img = self.sess.run([out_var,refine_var,rec_var,cycle_var], feed_dict={in_var: sample_image})
             merge=np.concatenate([sample_image,fake_img,refine_fake,rec_img,cycle_img],axis=2)
             if args.single_img == 'std':
-                imsave(fake_img, [1, 1], image_path)
+                imsave(fake_img, [1, 1], image_path, shape=self.final_resize)
             elif args.single_img == 'refine':
-                imsave(refine_fake, [1, 1], image_path)
+                imsave(refine_fake, [1, 1], image_path, shape=self.final_resize)
             elif args.single_img == 'hist_spec':
-                imsave(hist_spcification(fake_img), [1, 1], image_path)
+                imsave(hist_spcification(fake_img), [1, 1], image_path, shape=self.image_size)
             else:
                 save_images(merge, [1, 1], image_path)

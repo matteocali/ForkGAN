@@ -1,4 +1,4 @@
-### train
+### test
 python main.py \
     --phase train \
     --dataset_dir multi_src \
@@ -11,4 +11,5 @@ python main.py \
     --which_direction BtoA \
     --checkpoint_dir ./check/multi_src_40e \
     --sample_dir ./check/multi_src_40e/sample \
-    --test_dir ./check/multi_src_40e/testB2A
+    --test_dir ./check/multi_src_40e/uavid_night_refine
+    
