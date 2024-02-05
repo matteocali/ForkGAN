@@ -126,7 +126,7 @@ def hist_spcification(img):
     """ 
 
     # Load the night images Y histograms
-    night_y_hist = np.load('night_y_hist.npy')
+    night_y_hist = np.load('night_y_hist_acdc_only.npy')
     # Normalize the image
     img = cv2.normalize(img[0, ...], None, alpha = 0, beta = 255, norm_type = cv2.NORM_MINMAX, dtype = cv2.CV_32F).astype(np.uint8)
     # Convert to YCrCb color space
