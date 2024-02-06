@@ -62,6 +62,7 @@ parser.add_argument('--use_resnet', dest='use_resnet', type=str2bool, default=Tr
 parser.add_argument('--use_lsgan', dest='use_lsgan', type=str2bool, default=True, help='gan loss defined in lsgan')
 parser.add_argument('--max_size', dest='max_size', type=int, default=50, help='max size of image pool, 0 means do not use image pool')
 parser.add_argument('--single_img', dest='single_img', type=single_img_parser, default='none', help='save only the converted image')
+parser.add_argument('--diag', dest='diag', action='store_true', help='if set while applying the histogram specification, pixel that become brighter will be reverted to original value')
 args = parser.parse_args()
 
 os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)

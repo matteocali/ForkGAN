@@ -119,7 +119,7 @@ def transform(image, npx=64, is_crop=True, resize_w=64):
 def inverse_transform(images):
     return (images+1.)/2.
 
-def hist_spcification(img):
+def hist_spcification(img, diag):
     """
     Given the image in input it changes the Y histogram with the one obtained by real night images
     :param img: image in input
@@ -131,8 +131,12 @@ def hist_spcification(img):
     img = cv2.normalize(img[0, ...], None, alpha = 0, beta = 255, norm_type = cv2.NORM_MINMAX, dtype = cv2.CV_32F).astype(np.uint8)
     # Convert to YCrCb color space
     ycrcb_img = cv2.cvtColor(img, cv2.COLOR_RGB2YCrCb)
+    original_ycbcrc_img = ycrcb_img.copy()
     # Specialize the histogram of the Y channel
     ycrcb_img[..., 0] = match_histograms(ycrcb_img[..., 0], night_y_hist)
+    # Reverte brighter pixels to the original value
+    if diag:
+        ycrcb_img[..., 0] = np.where(original_ycbcrc_img[..., 0] < ycrcb_img[..., 0], original_ycbcrc_img[..., 0], ycrcb_img[..., 0])
     # Convert back to RGB color space
     img = cv2.cvtColor(ycrcb_img, cv2.COLOR_YCrCb2RGB)
 

@@ -509,6 +509,6 @@ class cyclegan(object):
             elif args.single_img == 'refine':
                 imsave(refine_fake, [1, 1], image_path, shape=self.final_resize)
             elif args.single_img == 'hist_spec':
-                imsave(hist_spcification(fake_img), [1, 1], image_path, shape=self.image_size)
+                imsave(hist_spcification(fake_img, args.diag), [1, 1], image_path, shape=self.image_size)
             else:
                 save_images(merge, [1, 1], image_path)
